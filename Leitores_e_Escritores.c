@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <windows.h> // Inclui a biblioteca windows.h para a função Sleep
-#include <time.h> // Inclui a biblioteca time.h para a função time
+#include <time.h>    // Inclui a biblioteca time.h para a função time
 
 /* Definição de um produto */
 typedef struct {
@@ -28,12 +28,12 @@ int num_leitores = 0;
 sem_t mutex, db;
 
 /* Função para leitores */
-void* leitor(void* arg) {
-    int id = *((int*)arg);
+void *leitor(void *arg) {
+    int id = *((int *)arg);
     int i; /* Declaração de variável movida para o início do bloco*/
 
     while (1) {
-        sem_wait(&mutex);  /* Pede acesso exclusivo para incrementar num_leitores */
+        sem_wait(&mutex); /* Pede acesso exclusivo para incrementar num_leitores */
         num_leitores++;
         if (num_leitores == 1) { /* Primeiro leitor bloqueia os escritores */
             sem_wait(&db);
@@ -62,8 +62,8 @@ void* leitor(void* arg) {
 }
 
 /* Função para escritores */
-void* escritor(void* arg) {
-    int id = *((int*)arg);
+void *escritor(void *arg) {
+    int id = *((int *)arg);
     int produto_id; /* Declaração de variável movida para o início do bloco */
 
     while (1) {
@@ -86,7 +86,7 @@ void* escritor(void* arg) {
 }
 
 int main() {
-    srand(time(NULL));
+    srand(time(NULL)); /* Inicializa a semente do gerador de números aleatórios */
 
     /* Inicializa semáforos */
     sem_init(&mutex, 0, 1);
@@ -94,13 +94,15 @@ int main() {
 
     /* Cria threads de leitores e escritores */
     pthread_t leitores[3], escritores[2];
-    int ids[5] = {1, 2, 3, 4, 5};
+    int ids[5] = {1, 2, 3, 4, 5}; /* IDs para leitores e escritores */
     int i; /* Declaração de variável movida para o início do bloco */
 
+    /* Cria threads para os leitores */
     for (i = 0; i < 3; i++) {
         pthread_create(&leitores[i], NULL, leitor, &ids[i]);
     }
 
+    /* Cria threads para os escritores */
     for (i = 0; i < 2; i++) {
         pthread_create(&escritores[i], NULL, escritor, &ids[3 + i]);
     }
