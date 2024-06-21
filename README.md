@@ -1,22 +1,12 @@
 # Leitores_e_esctritores
 Projeto 2 - Problemas Clássicos de IPC
-Condições de conclusão
-Aberto: sexta, 3 mai 2024, 00:00
-Vencimento: terça, 25 jun 2024, 19:00
-Projeto de Implantação Problemas Clássicos de IPC
 
 Título: Implementação de Soluções para Problemas Clássicos em Linguagem C
 
 Descrição do Projeto:
 Os alunos serão divididos em duplas e cada grupo deverá escolher um dos seguintes problemas clássicos para implementar a solução:
 
-Produtores x Consumidores (Matheus Enzo).
 Leitores x Escritores (Claudio Eric).
-Jantar dos selvagens/canibais (Alison Lucas).
-Jantar dos Filósofos (Anthon Pedro).
-Barbeiro Dorminhoco (João Rafa).
-Requisitos do Projeto:
-Apresentação do Problema e da Solução:
 
 Cada grupo deve apresentar uma explicação detalhada do problema selecionado.
 A solução deve ser implementada na linguagem de programação C utilizando Threads.
