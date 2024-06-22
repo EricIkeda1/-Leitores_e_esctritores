@@ -41,7 +41,7 @@ void *leitor(void *arg) {
         sem_post(&mutex); /* Sai da seção critica */
 
         /* Leitura do banco de dados */
-        printf("Leitor %d est� lendo o banco de dados...\n", id); /* Indica que o leitor está lendo */
+        printf("Leitor %d esta lendo o banco de dados...\n", id); /* Indica que o leitor está lendo */
         for (i = 0; i < NUM_PRODUTOS; i++) { /* Itera sobre os produtos no banco de dados */
             /* Imprime os detalhes de cada produto */
             printf("Produto %d: cor=%s, tamanho=%s, estoque=%d\n",
@@ -71,7 +71,7 @@ void *escritor(void *arg) {
         sem_wait(&db); /* Bloqueia o acesso exclusivo ao banco de dados */
 
         /* Escrita no banco de dados */
-        printf("Escritor %d est� escrevendo no banco de dados...\n", id); /* Indica que o escritor está escrevendo */
+        printf("Escritor %d esta escrevendo no banco de dados...\n", id); /* Indica que o escritor está escrevendo */
         produto_id = rand() % NUM_PRODUTOS; /* Escolhe um produto aleatório para atualizar */
         banco_dados[produto_id].estoque = rand() % 200; /* Atualiza o estoque do produto com um valor aleatório */
         printf("Escritor %d atualizou Produto %d para estoque %d\n",
