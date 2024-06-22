@@ -1,123 +1,124 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <windows.h> // Inclui a biblioteca windows.h para a funÁ„o Sleep
-#include <time.h>    // Inclui a biblioteca time.h para a funÁ„o time
+#include <stdio.h> /* Inclui a biblioteca padrao de entrada e sa√≠da (para funcoes como printf) */
+#include <stdlib.h> /* Inclui a biblioteca padrao para fun√ß√µes utilit√°rias (como rand, srand) */
+#include <pthread.h> /* Inclui a biblioteca para manipulacao de threads */
+#include <semaphore.h> /* Inclui a biblioteca para manipula√ß√£o de sem√°foros */
+#include <windows.h> /* Inclui a biblioteca para fun√ß√µes do Windows (como Sleep) */
+#include <time.h> /* Inclui a biblioteca para manipula√ß√£o de tempo (como time e srand) */
 
-/* DefiniÁ„o de um produto */
+/* Defini√ß√£o da estrutura do Produto */
 typedef struct {
-    int id;
-    char cor[20];
-    char tamanho[10];
-    int estoque;
+    int id; /* ID do produto (identifica√ß√£o √∫nica) */
+    char cor[20]; /* Cor do produto */
+    char tamanho[10]; /* Tamanho do produto (ex: S, M, L, XL) */
+    int estoque; /* Quantidade em estoque do produto */
 } Produto;
 
-/* Banco de dados simulado com um array de produtos */
-#define NUM_PRODUTOS 5
+/* Banco de dados simulado com produtos */
+#define NUM_PRODUTOS 5 /* Define o numero de produtos no banco de dados */
 Produto banco_dados[NUM_PRODUTOS] = {
-    {1, "vermelho", "M", 100},
-    {2, "azul", "L", 50},
-    {3, "verde", "S", 75},
-    {4, "preto", "XL", 20},
-    {5, "branco", "M", 150}
+    {1, "vermelho", "M", 100}, /* Produto 1 */
+    {2, "azul", "L", 50}, /* Produto 2 */
+    {3, "verde", "S", 75}, /* Produto 3 */
+    {4, "preto", "XL", 20}, /* Produto 4 */
+    {5, "branco", "M", 150} /* Produto 5 */
 };
 
-/* Vari·veis de controle */
-int num_leitores = 0;
-sem_t mutex, db;
+/* Vari√°veis de controle para os sem√°foros */
+int num_leitores = 0; /* Contador de leitores (n√∫mero de threads leitoras ativas) */
+sem_t mutex, db; /* Sem√°foros para controle de acesso */
 
-/* FunÁ„o para leitores */
+/* Fun√ß√£o que define o comportamento de um leitor */
 void *leitor(void *arg) {
-    int id = *((int *)arg);
-    int i; /* DeclaraÁ„o de vari·vel movida para o inÌcio do bloco*/
+    int id = *((int *)arg); /* ID do leitor, passado como argumento */
+    int i; /* Vari√°vel de controle para loop */
 
-    while (1) {
-        sem_wait(&mutex); /* Pede acesso exclusivo para incrementar num_leitores */
-        num_leitores++;
-        if (num_leitores == 1) { /* Primeiro leitor bloqueia os escritores */
-            sem_wait(&db);
+    while (1) { /* Loop infinito para simular leituras cont√≠nuas */
+        sem_wait(&mutex); /* Entra na secao critica para incrementar o contador de leitores */
+        num_leitores++; /* Incrementa o contador de leitores */
+        if (num_leitores == 1) { /* Se for o primeiro leitor */
+            sem_wait(&db); /* Bloqueia o acesso para escritores */
         }
-        sem_post(&mutex); /* Libera o acesso a num_leitores */
+        sem_post(&mutex); /* Sai da se√ß√£o critica */
 
         /* Leitura do banco de dados */
-        printf("Leitor %d est· lendo o banco de dados...\n", id);
-        for (i = 0; i < NUM_PRODUTOS; i++) {
+        printf("Leitor %d estÔøΩ lendo o banco de dados...\n", id); /* Indica que o leitor est√° lendo */
+        for (i = 0; i < NUM_PRODUTOS; i++) { /* Itera sobre os produtos no banco de dados */
+            /* Imprime os detalhes de cada produto */
             printf("Produto %d: cor=%s, tamanho=%s, estoque=%d\n",
                    banco_dados[i].id, banco_dados[i].cor, banco_dados[i].tamanho, banco_dados[i].estoque);
         }
-        Sleep(1000); /* Simula tempo de leitura */
+        Sleep(1000); /* Simula o tempo de leitura com uma espera de 1 segundo */
 
-        sem_wait(&mutex); /* Pede acesso exclusivo para decrementar num_leitores */
-        num_leitores--;
-        if (num_leitores == 0) { /* ⁄ltimo leitor libera os escritores */
-            sem_post(&db);
+        sem_wait(&mutex); /* Entra na se√ß√£o cr√≠tica para decrementar o contador de leitores */
+        num_leitores--; /* Decrementa o contador de leitores */
+        if (num_leitores == 0) { /* Se for o √∫ltimo leitor */
+            sem_post(&db); /* Libera o acesso para escritores */
         }
-        sem_post(&mutex); /* Libera o acesso a num_leitores */
+        sem_post(&mutex); /* Sai da se√ß√£o cr√≠tica */
 
-        Sleep(rand() % 5000); /* Espera aleatÛria antes de ler novamente */
+        Sleep(rand() % 5000); /* Espera aleat√°ria antes de ler novamente (0 a 5 segundos) */
     }
 
-    return NULL;
+    return NULL; /* Retorno nulo, n√£o utilizado */
 }
 
-/* FunÁ„o para escritores */
+/* Fun√ß√£o que define o comportamento de um escritor */
 void *escritor(void *arg) {
-    int id = *((int *)arg);
-    int produto_id; /* DeclaraÁ„o de vari·vel movida para o inÌcio do bloco */
+    int id = *((int *)arg); /* ID do escritor, passado como argumento */
+    int produto_id; /* ID do produto a ser atualizado */
 
-    while (1) {
-        sem_wait(&db); /* Pede acesso exclusivo ao banco de dados */
+    while (1) { /* Loop infinito para simular escritas cont√≠nuas */
+        sem_wait(&db); /* Bloqueia o acesso exclusivo ao banco de dados */
 
         /* Escrita no banco de dados */
-        printf("Escritor %d est· escrevendo no banco de dados...\n", id);
-        produto_id = rand() % NUM_PRODUTOS;
-        banco_dados[produto_id].estoque = rand() % 200; /* Atualiza o estoque de um produto aleatÛrio */
+        printf("Escritor %d estÔøΩ escrevendo no banco de dados...\n", id); /* Indica que o escritor est√° escrevendo */
+        produto_id = rand() % NUM_PRODUTOS; /* Escolhe um produto aleat√≥rio para atualizar */
+        banco_dados[produto_id].estoque = rand() % 200; /* Atualiza o estoque do produto com um valor aleat√≥rio */
         printf("Escritor %d atualizou Produto %d para estoque %d\n",
                id, banco_dados[produto_id].id, banco_dados[produto_id].estoque);
-        Sleep(1000); /* Simula tempo de escrita */
+        Sleep(1000); /* Simula o tempo de escrita com uma espera de 1 segundo */
 
         sem_post(&db); /* Libera o acesso ao banco de dados */
 
-        Sleep(rand() % 5000); /* Espera aleatÛria antes de escrever novamente */
+        Sleep(rand() % 5000); /* Espera aleat√≥ria antes de escrever novamente (0 a 5 segundos) */
     }
 
-    return NULL;
+    return NULL; /* Retorno nulo, n√£o utilizado */
 }
 
 int main() {
-    srand(time(NULL)); /* Inicializa a semente do gerador de n˙meros aleatÛrios */
+    srand(time(NULL)); /* Inicializa a semente do gerador de n√∫meros aleat√≥rios */
 
-    /* Inicializa sem·foros */
-    sem_init(&mutex, 0, 1);
-    sem_init(&db, 0, 1);
+    /* Inicializa√ß√£o dos sem√°foros */
+    sem_init(&mutex, 0, 1); /* Inicializa o sem√°foro mutex com valor 1 */
+    sem_init(&db, 0, 1); /* Inicializa o sem√°foro db com valor 1 */
 
-    /* Cria threads de leitores e escritores */
-    pthread_t leitores[3], escritores[2];
+    /* Cria√ß√£o de threads de leitores e escritores */
+    pthread_t leitores[3], escritores[2]; /* Arrays para armazenar os identificadores das threads de leitores e escritores */
     int ids[5] = {1, 2, 3, 4, 5}; /* IDs para leitores e escritores */
-    int i; /* DeclaraÁ„o de vari·vel movida para o inÌcio do bloco */
+    int i; /* Vari√°vel de controle para loop */
 
-    /* Cria threads para os leitores */
+    /* Cria√ß√£o das threads de leitores */
     for (i = 0; i < 3; i++) {
-        pthread_create(&leitores[i], NULL, leitor, &ids[i]);
+        pthread_create(&leitores[i], NULL, leitor, &ids[i]); /* Cria uma thread de leitor para cada ID */
     }
 
-    /* Cria threads para os escritores */
+    /* Cria√ß√£o das threads de escritores */
     for (i = 0; i < 2; i++) {
-        pthread_create(&escritores[i], NULL, escritor, &ids[3 + i]);
+        pthread_create(&escritores[i], NULL, escritor, &ids[3 + i]); /* Cria uma thread de escritor para cada ID */
     }
 
-    /* Aguarda as threads (nunca ocorre aqui, pois elas est„o em loops infinitos) */
+    /* Aguarda a conclus√£o das threads (nunca ocorre aqui, pois elas est√£o em loops infinitos) */
     for (i = 0; i < 3; i++) {
-        pthread_join(leitores[i], NULL);
+        pthread_join(leitores[i], NULL); /* Aguarda a conclus√£o das threads de leitores */
     }
     for (i = 0; i < 2; i++) {
-        pthread_join(escritores[i], NULL);
+        pthread_join(escritores[i], NULL); /* Aguarda a conclus√£o das threads de escritores */
     }
 
-    /* Destroi sem·foros */
-    sem_destroy(&mutex);
-    sem_destroy(&db);
+    /* Destrui√ß√£o dos sem√°foros */
+    sem_destroy(&mutex); /* Destroi o sem√°foro mutex */
+    sem_destroy(&db); /* Destroi o sem√°foro db */
 
-    return 0;
+    return 0; /* Retorno do programa principal */
 }
